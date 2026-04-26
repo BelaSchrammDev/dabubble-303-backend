@@ -1,0 +1,26 @@
+# compiled output
+/dist
+/node_modules
+
+# environment
+.env
+.env.local
+
+# uploads (local dev files)
+/uploads/**/*
+!/uploads/profile-pictures/.gitkeep
+!/uploads/message-attachments/.gitkeep
+
+# logs
+logs
+*.log
+
+# IDE
+.vscode
+.idea
+
+# test coverage
+/coverage
+
+# misc
+*.DS_Store

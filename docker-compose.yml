@@ -1,0 +1,93 @@
+version: '3.9'
+
+services:
+  backend:
+    build: .
+    container_name: dabubble-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=${NODE_ENV:-development}
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=dabubble
+      - DATABASE_USER=dabubble
+      - DATABASE_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
+      - JWT_EXPIRES_IN=15m
+      - JWT_REFRESH_EXPIRES_IN=7d
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - GOOGLE_CALLBACK_URL=http://localhost:3000/api/auth/google/callback
+      - FRONTEND_URL=http://localhost:4200
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT:-1025}
+      - MAIL_USER=${MAIL_USER}
+      - MAIL_PASS=${MAIL_PASS}
+      - MAIL_FROM=noreply@dabubble.de
+      - UPLOAD_DIR=/app/uploads
+      - MAX_FILE_SIZE=5242880
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - dabubble-network
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: dabubble-postgres
+    environment:
+      - POSTGRES_DB=dabubble
+      - POSTGRES_USER=dabubble
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dabubble -d dabubble"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - dabubble-network
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: dabubble-mailhog
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web-UI → http://localhost:8025
+    networks:
+      - dabubble-network
+    restart: unless-stopped
+    profiles:
+      - dev
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: dabubble-pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@dabubble.de
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD:-admin}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - dabubble-network
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+  uploads_data:
+
+networks:
+  dabubble-network:
+    driver: bridge
