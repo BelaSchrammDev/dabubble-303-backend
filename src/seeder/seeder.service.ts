@@ -57,13 +57,12 @@ export class SeederService implements OnApplicationBootstrap {
     const existing = await this.channelRepo.findOne({ where: { defaultChannel: true } });
     if (existing) return;
 
-    const bot = await this.userRepo.findOne({ where: { id: DABUBBLE_BOT_ID } });
     const channel = this.channelRepo.create({
       name: 'Allgemein',
       description: 'Der allgemeine Kanal für alle Mitglieder',
       defaultChannel: true,
       creatorID: DABUBBLE_BOT_ID,
-      members: bot ? [bot] : [],
+      members: [],
     });
     await this.channelRepo.save(channel);
     this.logger.log('Default-Channel "Allgemein" angelegt');
