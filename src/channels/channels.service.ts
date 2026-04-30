@@ -30,7 +30,8 @@ export class ChannelsService {
   }
 
   async create(dto: CreateChannelDto, creatorID: string): Promise<ChannelEntity> {
-    const members = await this.userRepo.findBy({ id: In(dto.memberIDs) });
+    const memberIds = Array.from(new Set([...dto.memberIDs, creatorID]));
+    const members = await this.userRepo.findBy({ id: In(memberIds) });
     const channel = this.channelRepo.create({
       name: dto.name,
       description: dto.description ?? '',
