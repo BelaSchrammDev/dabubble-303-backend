@@ -60,6 +60,9 @@ export class UserEntity {
   @Column({ default: false })
   guest: boolean;
 
+  @Column({ default: false })
+  bot: boolean;
+
   @CreateDateColumn({ type: 'timestamptz' })
   signupAt: Date;
 

@@ -25,10 +25,14 @@ export class SeederService implements OnApplicationBootstrap {
 
   private async seedBot() {
     const existing = await this.userRepo.findOne({ where: { id: DABUBBLE_BOT_ID } });
-    if (existing) return;
+    if (existing) {
+      // bot-Flag nachrüsten falls noch nicht gesetzt
+      if (!existing.bot) {
+        await this.userRepo.update(DABUBBLE_BOT_ID, { bot: true });
+      }
+      return;
+    }
 
-    // TypeORM unterstützt keine direkte ID-Setzung bei uuid PK über create()
-    // Wir nutzen query builder für die feste ID
     await this.userRepo
       .createQueryBuilder()
       .insert()
@@ -41,6 +45,7 @@ export class SeederService implements OnApplicationBootstrap {
         emailVerified: true,
         online: false,
         avatar: 0,
+        bot: true,
       })
       .orIgnore()
       .execute();
