@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { MessageEntity, IReaction } from './entities/message.entity';
 import { CreateMessageDto, UpdateMessageDto } from './dto/message.dto';
 import { AppGateway } from '../gateway/app.gateway';
@@ -21,18 +21,30 @@ export class MessagesService {
     private readonly gateway: AppGateway,
   ) {}
 
-  async findByChannel(channelId: string): Promise<MessageEntity[]> {
-    return this.messageRepo.find({
-      where: { channelId, parentMessageId: undefined },
-      order: { createdAt: 'ASC' },
+  async findByChannel(channelId: string, limit: number, offset: number): Promise<{ messages: MessageEntity[]; total: number }> {
+    const total = await this.messageRepo.count({
+      where: { channelId, parentMessageId: IsNull() },
     });
+    const rows = await this.messageRepo.find({
+      where: { channelId, parentMessageId: IsNull() },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+    return { messages: rows.reverse(), total };
   }
 
-  async findByChat(chatId: string): Promise<MessageEntity[]> {
-    return this.messageRepo.find({
-      where: { chatId, parentMessageId: undefined },
-      order: { createdAt: 'ASC' },
+  async findByChat(chatId: string, limit: number, offset: number): Promise<{ messages: MessageEntity[]; total: number }> {
+    const total = await this.messageRepo.count({
+      where: { chatId, parentMessageId: IsNull() },
     });
+    const rows = await this.messageRepo.find({
+      where: { chatId, parentMessageId: IsNull() },
+      order: { createdAt: 'DESC' },
+      take: limit,
+      skip: offset,
+    });
+    return { messages: rows.reverse(), total };
   }
 
   async findAnswers(parentMessageId: string): Promise<MessageEntity[]> {

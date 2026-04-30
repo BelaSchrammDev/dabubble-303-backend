@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -62,8 +63,12 @@ export class ChannelsController {
 
   @Get(':id/messages')
   @ApiOperation({ summary: 'Channel-Messages abrufen' })
-  getMessages(@Param('id') id: string) {
-    return this.messagesService.findByChannel(id);
+  getMessages(
+    @Param('id') id: string,
+    @Query('limit') limit = '50',
+    @Query('offset') offset = '0',
+  ) {
+    return this.messagesService.findByChannel(id, parseInt(limit, 10), parseInt(offset, 10));
   }
 
   @Post(':id/messages')

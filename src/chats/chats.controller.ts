@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -49,8 +50,12 @@ export class ChatsController {
 
   @Get(':id/messages')
   @ApiOperation({ summary: 'Chat-Messages abrufen' })
-  getMessages(@Param('id') chatId: string) {
-    return this.messagesService.findByChat(chatId);
+  getMessages(
+    @Param('id') chatId: string,
+    @Query('limit') limit = '50',
+    @Query('offset') offset = '0',
+  ) {
+    return this.messagesService.findByChat(chatId, parseInt(limit, 10), parseInt(offset, 10));
   }
 
   @Post(':id/messages')
